@@ -5,7 +5,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: "landlord" | "tenant";
+  role: "LANDLORD" | "TENANT";
 }
 
 interface AuthState {
