@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(TENANT)
+  createdAt DateTime @default(now())
+
+  properties          Property[]
+  tenantProfile       TenantProfile?
+  maintenanceRequests MaintenanceRequest[]
+  payments            Payment[]
+}
+
+enum Role {
+  LANDLORD
+  TENANT
+}
+
+model Property {
+  id         String   @id @default(cuid())
+  landlordId String
+  name       String
+  address    String
+  createdAt  DateTime @default(now())
+
+  landlord User   @relation(fields: [landlordId], references: [id])
+  units    Unit[]
+}
+
+model Unit {
+  id         String   @id @default(cuid())
+  propertyId String
+  unitNumber String
+  rent       Float
+  createdAt  DateTime @default(now())
+
+  property            Property            @relation(fields: [propertyId], references: [id])
+  tenantProfile       TenantProfile?
+  maintenanceRequests MaintenanceRequest[]
+  payments            Payment[]
+}
+
+model TenantProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  unitId    String   @unique
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  unit Unit @relation(fields: [unitId], references: [id])
+}
+
+model MaintenanceRequest {
+  id          String            @id @default(cuid())
+  unitId      String
+  userId      String
+  title       String
+  description String
+  status      MaintenanceStatus @default(SUBMITTED)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  unit Unit @relation(fields: [unitId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum MaintenanceStatus {
+  SUBMITTED
+  IN_PROGRESS
+  RESOLVED
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  unitId    String
+  userId    String
+  amount    Float
+  date      DateTime
+  note      String?
+  createdAt DateTime @default(now())
+
+  unit Unit @relation(fields: [unitId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
