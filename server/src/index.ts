@@ -2,6 +2,10 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth";
+import propertyRoutes from "./routes/properties";
+import unitRoutes from "./routes/units";
+import maintenanceRoutes from "./routes/maintenance";
+import paymentRoutes from "./routes/payments";
 
 dotenv.config();
 
@@ -18,6 +22,10 @@ app.use(
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/properties", propertyRoutes);
+app.use("/api/properties/:propertyId/units", unitRoutes);
+app.use("/api/maintenance", maintenanceRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
