@@ -6,6 +6,7 @@ import propertyRoutes from "./routes/properties";
 import unitRoutes from "./routes/units";
 import maintenanceRoutes from "./routes/maintenance";
 import paymentRoutes from "./routes/payments";
+import uploadRoutes from "./routes/uploads";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use("/api/properties", propertyRoutes);
 app.use("/api/properties/:propertyId/units", unitRoutes);
 app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

@@ -99,6 +99,20 @@ export default function LandlordDashboard() {
     }
   };
 
+  const uploadLease = async (unitId: string, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      await api.post(`/api/uploads/lease/${unitId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      alert("Lease uploaded successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload lease");
+    }
+  };
+
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
@@ -248,9 +262,21 @@ export default function LandlordDashboard() {
                         <p className="font-medium text-slate-800 text-sm">
                           {unit.unitNumber}
                         </p>
-                        <p className="text-slate-500 text-xs">
+                        <p className="text-slate-500 text-xs mb-2">
                           ${unit.rent}/month
                         </p>
+                        <label className="cursor-pointer text-xs text-blue-600 hover:text-blue-500">
+                          📄 Upload Lease
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) uploadLease(unit.id, file);
+                            }}
+                          />
+                        </label>
                       </div>
                     ))}
                   </div>
