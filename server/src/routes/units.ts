@@ -12,7 +12,7 @@ router.get(
   async (req: AuthRequest, res: Response) => {
     try {
       const units = await prisma.unit.findMany({
-        where: { propertyId: req.params.propertyId },
+        where: { propertyId: req.params.propertyId as string },
         include: { tenantProfile: { include: { user: true } } },
       });
       res.json({ units });
@@ -34,7 +34,7 @@ router.post(
         data: {
           unitNumber,
           rent,
-          propertyId: req.params.propertyId,
+          propertyId: req.params.propertyId as string,
         },
       });
       res.json({ unit });
