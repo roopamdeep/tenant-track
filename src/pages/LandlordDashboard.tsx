@@ -18,11 +18,22 @@ interface Property {
   units: Unit[];
 }
 
+interface MaintenanceRequest {
+  id: string;
+  title: string;
+  description: string;
+  status: "SUBMITTED" | "IN_PROGRESS" | "RESOLVED";
+  createdAt: string;
+  user: { name: string; email: string };
+  unit: { unitNumber: string; property: { name: string } };
+}
+
 export default function LandlordDashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
   const [properties, setProperties] = useState<Property[]>([]);
+  const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
   const [showAddProperty, setShowAddProperty] = useState(false);
   const [newProperty, setNewProperty] = useState({ name: "", address: "" });
   const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
@@ -31,6 +42,7 @@ export default function LandlordDashboard() {
 
   useEffect(() => {
     fetchProperties();
+    fetchRequests();
   }, []);
 
   const fetchProperties = async () => {
@@ -41,6 +53,15 @@ export default function LandlordDashboard() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      const res = await api.get("/api/maintenance");
+      setRequests(res.data.requests);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -64,6 +85,15 @@ export default function LandlordDashboard() {
       setNewUnit({ unitNumber: "", rent: "" });
       setSelectedProperty(null);
       fetchProperties();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const updateStatus = async (id: string, status: string) => {
+    try {
+      await api.patch(`/api/maintenance/${id}`, { status });
+      fetchRequests();
     } catch (err) {
       console.error(err);
     }
@@ -100,7 +130,6 @@ export default function LandlordDashboard() {
           </button>
         </div>
 
-        {/* Add Property Form */}
         {showAddProperty && (
           <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-6">
             <h3 className="font-semibold text-slate-800 mb-4">New Property</h3>
@@ -141,7 +170,6 @@ export default function LandlordDashboard() {
           </div>
         )}
 
-        {/* Properties List */}
         {loading ? (
           <p className="text-slate-500 text-sm">Loading...</p>
         ) : properties.length === 0 ? (
@@ -172,7 +200,6 @@ export default function LandlordDashboard() {
                   </button>
                 </div>
 
-                {/* Add Unit Form */}
                 {selectedProperty === property.id && (
                   <div className="bg-slate-50 rounded-xl p-4 mb-4">
                     <div className="grid grid-cols-2 gap-3 mb-3">
@@ -212,7 +239,6 @@ export default function LandlordDashboard() {
                   </div>
                 )}
 
-                {/* Units List */}
                 {property.units.length === 0 ? (
                   <p className="text-slate-400 text-sm">No units added yet</p>
                 ) : (
@@ -233,6 +259,50 @@ export default function LandlordDashboard() {
             ))}
           </div>
         )}
+
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold text-slate-800 mb-6">
+            Maintenance Requests
+          </h2>
+          {requests.length === 0 ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
+              <p className="text-slate-500">No maintenance requests yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {requests.map((req) => (
+                <div
+                  key={req.id}
+                  className="bg-white border border-slate-200 rounded-2xl p-6"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold text-slate-800">
+                        {req.title}
+                      </h3>
+                      <p className="text-slate-500 text-sm mt-1">
+                        {req.description}
+                      </p>
+                      <p className="text-slate-400 text-xs mt-2">
+                        {req.user.name} · {req.unit.property.name} ·{" "}
+                        {req.unit.unitNumber}
+                      </p>
+                    </div>
+                    <select
+                      value={req.status}
+                      onChange={(e) => updateStatus(req.id, e.target.value)}
+                      className="border border-slate-300 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="SUBMITTED">Submitted</option>
+                      <option value="IN_PROGRESS">In Progress</option>
+                      <option value="RESOLVED">Resolved</option>
+                    </select>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

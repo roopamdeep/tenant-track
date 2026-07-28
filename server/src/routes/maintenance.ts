@@ -88,7 +88,7 @@ router.patch(
 
       await resend.emails.send({
         from: "TenantTrack <onboarding@resend.dev>",
-        to: request.user.email,
+        to: "roopamdeep.concordia@gmail.com",
         subject: `Maintenance Update: ${request.title}`,
         html: `
         <h2>Your maintenance request has been updated</h2>
