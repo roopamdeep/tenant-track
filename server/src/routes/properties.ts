@@ -4,7 +4,6 @@ import { authenticate, requireLandlord, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
-// Get all properties for landlord
 router.get(
   "/",
   authenticate,
@@ -22,7 +21,6 @@ router.get(
   },
 );
 
-// Create a property
 router.post(
   "/",
   authenticate,
@@ -40,18 +38,16 @@ router.post(
   },
 );
 
-// Delete a property
 router.delete(
   "/:id",
   authenticate,
   requireLandlord,
   async (req: AuthRequest, res: Response) => {
     try {
+      const id = String(req.params.id);
+      const landlordId = String(req.userId);
       await prisma.property.delete({
-        where: {
-          id: req.params.id as string,
-          landlordId: req.userId as string,
-        },
+        where: { id, landlordId },
       });
       res.json({ success: true });
     } catch {
