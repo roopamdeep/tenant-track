@@ -73,10 +73,34 @@ router.patch(
   async (req: AuthRequest, res: Response) => {
     try {
       const { status } = req.body;
+
       const request = await prisma.maintenanceRequest.update({
         where: { id: req.params.id as string },
         data: { status },
+        include: {
+          user: true,
+          unit: { include: { property: true } },
+        },
       });
+
+      const { Resend } = await import("resend");
+      const resend = new Resend(process.env.RESEND_API_KEY);
+
+      await resend.emails.send({
+        from: "TenantTrack <onboarding@resend.dev>",
+        to: request.user.email,
+        subject: `Maintenance Update: ${request.title}`,
+        html: `
+        <h2>Your maintenance request has been updated</h2>
+        <p><strong>Issue:</strong> ${request.title}</p>
+        <p><strong>Status:</strong> ${status.replace("_", " ")}</p>
+        <p><strong>Property:</strong> ${request.unit.property.name}</p>
+        <p><strong>Unit:</strong> ${request.unit.unitNumber}</p>
+        <br/>
+        <p>Thank you for using TenantTrack!</p>
+      `,
+      });
+
       res.json({ request });
     } catch {
       res.status(500).json({ error: "Failed to update request" });
