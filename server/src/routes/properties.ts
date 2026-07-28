@@ -48,7 +48,10 @@ router.delete(
   async (req: AuthRequest, res: Response) => {
     try {
       await prisma.property.delete({
-        where: { id: req.params.id as string, landlordId: req.userId },
+        where: {
+          id: req.params.id as string,
+          landlordId: req.userId as string,
+        },
       });
       res.json({ success: true });
     } catch {
